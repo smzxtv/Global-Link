@@ -54,17 +54,17 @@
 ## 📦 安装使用
 
 ### Windows（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Global-Link-v2.1.0-Windows-x64-Installer.exe`
+1. 到 [Releases](https://github.com/smzxtv/Global-Link/releases) 页面下载 `Global-Link-v2.1.0-Windows-x64-Installer.exe`
 2. 双击安装（Windows 可能提示 SmartScreen，点「仍要运行」）
 3. 启动 环球通 Global Link
 
 ### Android（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Global-Link-v2.1.0-Android-Universal.apk`
+1. 到 [Releases](https://github.com/smzxtv/Global-Link/releases) 页面下载 `Global-Link-v2.1.0-Android-Universal.apk`
 2. 安装 APK（首次安装需允许未知来源）
 3. 启动应用，首次连接时授予 VPN 权限
 
 ### iOS（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Global-Link-v2.1.0-iOS.ipa`
+1. 到 [Releases](https://github.com/smzxtv/Global-Link/releases) 页面下载 `Global-Link-v2.1.0-iOS.ipa`
 2. 通过 AltStore 或企业签名方式安装
 3. 启动应用，首次连接时授予 VPN 权限
 
@@ -99,7 +99,7 @@ xcodebuild -scheme AethonReplica -configuration Release
 ## 📁 项目结构
 
 ```
-aethon-replica/
+Global-Link/
 ├── src/                    # Windows 前端（React + TypeScript）
 ├── src-tauri/              # Windows 后端（Rust + Tauri）
 │   └── resources/sing-box/ # Windows 核心二进制

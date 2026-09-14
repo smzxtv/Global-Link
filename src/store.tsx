@@ -21,15 +21,41 @@ export interface PersistedPayload {
   scanMode: ScanMode;
 }
 
-/** 内置默认配置：首次启动无任何配置时自动启用，用户可随时在“配置”页编辑/替换。 */
-export const DEFAULT_PROFILE: ServerProfile = {
-  id: "default-profile",
-  name: "示例服务器（Shadowsocks）",
-  protocol: "shadowsocks",
-  address: "127.0.0.1",
-  port: 8388,
-  params: { method: "aes-128-gcm", password: "change-me" },
-};
+/** 内置默认节点：真实可用 VLESS 订阅节点，首次启动即加载，用户可随时在“配置”页编辑/替换。 */
+const DEFAULT_UUID = "c18b978e-1c4e-415c-8bea-07942b563a64";
+
+const vlessNode = (
+  id: string,
+  name: string,
+  address: string,
+  port: number,
+): ServerProfile => ({
+  id,
+  name,
+  protocol: "vless",
+  address,
+  port,
+  params: {
+    uuid: DEFAULT_UUID,
+    security: "tls",
+    transport: "ws",
+    sni: "shuma.ccwu.cc",
+    host: "shuma.ccwu.cc",
+    path: "/",
+    fp: "chrome",
+  },
+});
+
+/** 全部内置默认节点（首启时若无持久化配置即加载这组真实节点）。 */
+export const DEFAULT_PROFILES: ServerProfile[] = [
+  vlessNode("default-hk1", "HK-1 (175.29.23.87)", "175.29.23.87", 443),
+  vlessNode("default-hk2", "HK-2 (122.10.119.252)", "122.10.119.252", 443),
+  vlessNode("default-hk3", "HK-3 (68.64.178.52)", "68.64.178.52", 443),
+  vlessNode("default-jp1", "JP-1 (103.143.81.126)", "103.143.81.126", 8443),
+];
+
+/** 兼容旧引用：默认配置即内置节点列表的第一个。 */
+export const DEFAULT_PROFILE: ServerProfile = DEFAULT_PROFILES[0];
 
 export interface AppModel {
   page: Page;
@@ -63,8 +89,8 @@ const initialState: AppModel = {
   page: "connect",
   appInfo: null,
   hydrated: false,
-  profiles: [DEFAULT_PROFILE],
-  conn: { profileId: DEFAULT_PROFILE.id, mode: "vpn", protocol: "auto", scanMode: "disabled" },
+  profiles: DEFAULT_PROFILES,
+  conn: { profileId: "default-hk2", mode: "socks5", protocol: "auto", scanMode: "quick" },
   status: "disconnected",
   logs: ["[应用] 环球通 Global Link 已就绪"],
   settings: {
