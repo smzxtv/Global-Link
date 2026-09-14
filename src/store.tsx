@@ -131,7 +131,8 @@ const initialState: AppModel = {
   appInfo: null,
   hydrated: false,
   profiles: DEFAULT_PROFILES,
-  conn: { profileId: "default-hk2", mode: "socks5", protocol: "auto", scanMode: "quick" },
+  // 不写死具体 id：内置列表会随版本换血，写死会在节点下架后指向不存在的配置。
+  conn: { profileId: DEFAULT_PROFILE.id, mode: "socks5", protocol: "auto", scanMode: "quick" },
   status: "disconnected",
   logs: ["[应用] 环球通 Global Link 已就绪"],
   settings: {
