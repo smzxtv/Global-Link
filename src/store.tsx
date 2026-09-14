@@ -79,6 +79,25 @@ export const DEFAULT_PROFILES: ServerProfile[] = [
 /** 兼容旧引用：默认配置即内置节点列表的第一个（当前为实测最稳的 HK-4）。 */
 export const DEFAULT_PROFILE: ServerProfile = DEFAULT_PROFILES[0];
 
+/** 内置节点的 id 前缀，用于和用户自建/导入的节点区分。 */
+const BUILTIN_ID_PREFIX = "default-";
+
+/** 把磁盘上的旧 profile 列表与当前版本自带的内置节点对账。
+ *
+ *  为什么必须做这一步：面板会更换 IP 池，内置节点是「随版本发布的快照」。
+ *  持久化时整表快照会被原样读回，于是老用户升级后**看到的仍是上一版的死节点**，
+ *  表现就是「列表里有节点，点连接却连不上」——只有全新安装才能拿到新节点。
+ *
+ *  规则：`default-*` 内置节点一律以当前版本为准（因此用户在内置节点上做的手工
+ *  改动、或删掉的内置节点，会在下次启动时被恢复）；非 `default-*` 的用户节点
+ *  原样保留并排在后面。若需长期保留自己的节点，请在「配置」页导入订阅，
+ *  它会生成 `profile-*` 这样的独立 id，不受此逻辑影响。
+ */
+export function reconcileProfiles(saved: ServerProfile[]): ServerProfile[] {
+  const custom = saved.filter((p) => !p.id.startsWith(BUILTIN_ID_PREFIX));
+  return [...DEFAULT_PROFILES, ...custom];
+}
+
 export interface AppModel {
   page: Page;
   appInfo: AppInfo | null;
@@ -132,10 +151,12 @@ function reducer(state: AppModel, action: Action): AppModel {
       return { ...state, appInfo: action.info };
     case "hydrate":
       // 优先使用已保存的配置；若磁盘上没有任何配置（为空数组），则回退到内置默认配置。
+      // 保存到磁盘的是一份「快照」，其中可能含上一版本的内置节点，因此读回时必须
+      // 与当前版本自带的内置节点对账（详见 reconcileProfiles）。
       {
         const savedProfiles =
           action.state.profiles && action.state.profiles.length > 0
-            ? action.state.profiles
+            ? reconcileProfiles(action.state.profiles)
             : state.profiles;
         const savedId = action.state.selectedProfileId ?? null;
         const profileId =
