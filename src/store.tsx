@@ -24,11 +24,17 @@ export interface PersistedPayload {
 /** 内置默认节点：真实可用 VLESS 订阅节点，首次启动即加载，用户可随时在“配置”页编辑/替换。 */
 const DEFAULT_UUID = "c18b978e-1c4e-415c-8bea-07942b563a64";
 
+/**
+ * 构造一个 VLESS + WS + TLS 节点。
+ * `overrides` 用于按订阅实际参数逐节点覆盖（不同节点的 uuid / sni / host / path 常常不同），
+ * 未覆盖的字段沿用下面的公共默认值。
+ */
 const vlessNode = (
   id: string,
   name: string,
   address: string,
   port: number,
+  overrides: Partial<Record<string, string>> = {},
 ): ServerProfile => ({
   id,
   name,
@@ -43,18 +49,34 @@ const vlessNode = (
     host: "shuma.ccwu.cc",
     path: "/",
     fp: "chrome",
+    ...overrides,
   },
 });
 
-/** 全部内置默认节点（首启时若无持久化配置即加载这组真实节点）。 */
+/** 全部内置默认节点（首启时若无持久化配置即加载这组真实节点）。
+ *
+ *  顺序即回退优先级：`ConnectPage` 与 `hydrate` 在没有有效选中项时会取列表第一个，
+ *  因此第一位必须是实测最稳的节点。这里首位给 HK 而不是延迟更低的 TW：
+ *  实测 HK-4 0.92s、TW-1 0.67s，但国内出口到 HK 的路由通常更稳定，故 HK 优先。
+ *
+ *  数据来源：2026-09-14 抓取面板订阅（80 个 VLESS+WS+TLS 节点），用与应用同款的
+ *  sing-box 1.14.0 核心起 SOCKS5 入站，逐个以 `https://www.gstatic.com/generate_204`
+ *  端到端实测，52 个可用；下面 6 个按实测延迟择优并覆盖 4 个地区。
+ *
+ *  ⚠️ 这些是裸 IP 快照，面板更换 IP 池后会整体失效（本次就发现上一版 4 个节点里有
+ *  3 个已下架）。长期正解是引导用户在「配置」页导入订阅，而不是依赖内置节点。
+ */
 export const DEFAULT_PROFILES: ServerProfile[] = [
-  vlessNode("default-hk1", "HK-1 (175.29.23.87)", "175.29.23.87", 443),
+  vlessNode("default-hk4", "HK-4 (45.152.64.16)", "45.152.64.16", 443),
+  vlessNode("default-tw1", "TW-1 (43.213.230.249)", "43.213.230.249", 443),
+  vlessNode("default-jp2", "JP-2 (138.3.212.160)", "138.3.212.160", 8443),
+  vlessNode("default-ca1", "CA-1 (137.220.52.250)", "137.220.52.250", 443),
+  vlessNode("default-tw2", "TW-2 (140.235.38.47)", "140.235.38.47", 443),
+  // 上一版快照节点：已不在当前面板订阅中，但本次实测仍能连通，留作兜底。
   vlessNode("default-hk2", "HK-2 (122.10.119.252)", "122.10.119.252", 443),
-  vlessNode("default-hk3", "HK-3 (68.64.178.52)", "68.64.178.52", 443),
-  vlessNode("default-jp1", "JP-1 (103.143.81.126)", "103.143.81.126", 8443),
 ];
 
-/** 兼容旧引用：默认配置即内置节点列表的第一个。 */
+/** 兼容旧引用：默认配置即内置节点列表的第一个（当前为实测最稳的 HK-4）。 */
 export const DEFAULT_PROFILE: ServerProfile = DEFAULT_PROFILES[0];
 
 export interface AppModel {

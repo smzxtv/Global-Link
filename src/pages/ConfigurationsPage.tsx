@@ -3,8 +3,9 @@ import { useApp } from "../store";
 import { importSubscription } from "../lib/core";
 import type { Protocol, ServerProfile } from "../types";
 
+// 注意：这里刻意不提供「自动」——后端把该字段直接当作 sing-box 的出站 type 使用，
+// "auto" 不是合法出站类型，选中它只会让连接报 "unsupported protocol: auto"。
 const PROTOCOLS: { value: Protocol; label: string }[] = [
-  { value: "auto", label: "自动" },
   { value: "shadowsocks", label: "Shadowsocks" },
   { value: "vmess", label: "VMess" },
   { value: "vless", label: "VLESS" },
@@ -27,6 +28,11 @@ export default function ConfigurationsPage() {
   const [port, setPort] = useState(443);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [uuid, setUuid] = useState("");
+  /** 编辑既有配置时保留其原始 params（uuid / sni / host / path / transport / security / fp 等），
+   *  避免「编辑 → 保存修改」把订阅导入带回的参数清空，导致该节点再也连不上。 */
+  const [baseParams, setBaseParams] = useState<Record<string, string>>({});
+  const [formErr, setFormErr] = useState<string | null>(null);
   function resetForm() {
     setName("");
     setProtocol("shadowsocks");
@@ -34,6 +40,9 @@ export default function ConfigurationsPage() {
     setPort(443);
     setUsername("");
     setPassword("");
+    setUuid("");
+    setBaseParams({});
+    setFormErr(null);
     setEditingId(null);
     setShowForm(false);
   }
@@ -47,15 +56,28 @@ export default function ConfigurationsPage() {
     setPort(p.port);
     setUsername(p.params.username ?? "");
     setPassword(p.params.password ?? "");
+    setUuid(p.params.uuid ?? "");
+    setBaseParams({ ...p.params });
     setEditingId(id);
     setShowForm(true);
   }
 
   function saveProfile() {
     if (!name.trim() || !address.trim() || port <= 0) return;
-    const params: Record<string, string> = {};
+    // 以原始参数为底，只覆盖表单能表达的字段；其余参数一律保留。
+    const params: Record<string, string> = { ...baseParams };
     if (username.trim()) params.username = username.trim();
+    else delete params.username;
     if (password.trim()) params.password = password.trim();
+    else delete params.password;
+    if (uuid.trim()) params.uuid = uuid.trim();
+    else delete params.uuid;
+    // 后端对 VLESS / VMess / TUIC 强制要求 uuid，缺失时连接只会失败，这里提前拦住。
+    if ((protocol === "vless" || protocol === "vmess" || protocol === "tuic") && !params.uuid) {
+      setFormErr("该协议必须填写 UUID");
+      return;
+    }
+    setFormErr(null);
     const profile = { id: editingId ?? `profile-${Date.now()}`, name: name.trim(), protocol, address: address.trim(), port, params };
     if (editingId) {
       dispatch({ type: "update-profile", profile });
@@ -170,6 +192,21 @@ export default function ConfigurationsPage() {
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </label>
             </div>
+            {(protocol === "vless" || protocol === "vmess" || protocol === "tuic") && (
+              <>
+                <div className="form-row">
+                  <label className="field">
+                    <span>UUID（必填）</span>
+                    <input value={uuid} onChange={(e) => setUuid(e.target.value)} placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+                  </label>
+                </div>
+                <p className="hint">
+                  传输方式（WebSocket / gRPC）、SNI、Host、path 等参数由「订阅导入」写入，
+                  编辑保存时会自动保留；如需修改这些参数，请重新导入订阅。
+                </p>
+              </>
+            )}
+            {formErr && <div className="notice error">{formErr}</div>}
             <div className="form-row">
               <button className="primary" onClick={saveProfile}>
                 {editingId ? "保存修改" : "添加"}

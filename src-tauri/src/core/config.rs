@@ -64,6 +64,16 @@ fn build_outbound(
         "server_port": port,
     });
 
+    // 域名节点在「有 IPv6 地址但没有可用 IPv6 路由」的 Windows 网络上会先尝试 AAAA，
+    // TLS 握手长时间挂起，表现为「列表里有节点但就是连不上」。默认强制解析优先 IPv4，
+    // 必要时可在 params 里用 domain_strategy 覆盖（prefer_ipv6 / ipv4_only / ipv6_only）。
+    out["domain_strategy"] = json!(
+        params
+            .get("domain_strategy")
+            .cloned()
+            .unwrap_or_else(|| "prefer_ipv4".into())
+    );
+
     match protocol {
         "shadowsocks" => {
             let method = params.get("method").cloned().unwrap_or_else(|| "aes-128-gcm".into());
@@ -137,6 +147,14 @@ fn apply_tls(out: &mut Value, params: &HashMap<String, String>) {
     }
     if let Some(insecure) = params.get("insecure") {
         tls["insecure"] = json!(insecure == "true" || insecure == "1");
+    }
+    // uTLS 浏览器指纹：Cloudflare 一类的 CDN/面板会按 TLS 指纹过滤，Go 原生握手常被判定为
+    // 异常，表现为「TCP/TLS 能通但隧道拿不到数据」。订阅里的 fp（如 chrome）必须带上。
+    // 注意 sing-box 1.11+ 该字段名为 utls.fingerprint（不是早期的 utls.id）。
+    if let Some(fp) = params.get("fp") {
+        if !fp.is_empty() && fp != "none" {
+            tls["utls"] = json!({ "enabled": true, "fingerprint": fp });
+        }
     }
     out["tls"] = tls;
 }
@@ -248,5 +266,39 @@ mod tests {
         let out = &cfg["outbounds"][0];
         assert_eq!(out["tls"]["enabled"], true);
         assert_eq!(out["tls"]["server_name"], "cdn.example.com");
+    }
+
+    #[test]
+    fn outbound_prefers_ipv4_so_broken_ipv6_networks_still_connect() {
+        let cfg = build_config(&params(HashMap::new())).unwrap();
+        assert_eq!(cfg["outbounds"][0]["domain_strategy"], "prefer_ipv4");
+
+        // params 显式指定时以用户配置为准。
+        let mut p = params(HashMap::new());
+        p.params.insert("domain_strategy".into(), "ipv4_only".into());
+        let cfg = build_config(&p).unwrap();
+        assert_eq!(cfg["outbounds"][0]["domain_strategy"], "ipv4_only");
+    }
+
+    #[test]
+    fn tls_applies_utls_fingerprint_from_fp_param() {
+        // Cloudflare 前置节点会按 TLS 指纹过滤，fp 必须映射到 sing-box 的 utls.fingerprint。
+        let mut p = params(HashMap::new());
+        p.protocol = "vless".into();
+        p.params.insert("uuid".into(), "abc-123".into());
+        p.params.insert("security".into(), "tls".into());
+        p.params.insert("sni".into(), "example.com".into());
+        p.params.insert("fp".into(), "chrome".into());
+        let cfg = build_config(&p).unwrap();
+        let out = &cfg["outbounds"][0];
+        assert_eq!(out["tls"]["utls"]["enabled"], true);
+        assert_eq!(out["tls"]["utls"]["fingerprint"], "chrome");
+
+        // 没有 fp（或 fp=none）时不应写出 utls 字段。
+        let mut p2 = params(HashMap::new());
+        p2.protocol = "vless".into();
+        p2.params.insert("uuid".into(), "abc-123".into());
+        let cfg2 = build_config(&p2).unwrap();
+        assert!(cfg2["outbounds"][0]["tls"]["utls"].is_null());
     }
 }
