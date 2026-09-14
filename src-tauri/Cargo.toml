@@ -1,6 +1,6 @@
 [package]
 name = "global_link"
-version = "2.1.0"
+version = "2.1.1"
 description = "环球通 Global Link - independent Tauri v2 client for the sing-box networking core"
 authors = ["Global Link contributors"]
 edition = "2021"
