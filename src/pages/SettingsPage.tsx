@@ -217,11 +217,13 @@ export default function SettingsPage() {
         <h2>关于</h2>
         <dl className="about">
           <dt>应用</dt>
-          <dd>{appInfo ? `${appInfo.appName} v${currentVersion}` : "…"}</dd>
+          <dd>{appInfo ? `${appInfo.appName} v${currentVersion}` : "环球通 Global Link"}</dd>
           <dt>核心</dt>
           <dd>{appInfo ? appInfo.core.singBoxVersion : "…"}</dd>
           <dt>核心路径</dt>
           <dd>{appInfo?.core.corePath ?? "未获取"}</dd>
+          <dt>版本信息</dt>
+          <dd>环球通 v2.1.0 - 出品：数码解码</dd>
         </dl>
         <div className="about-links">
           <a href="https://t.me/+tVg48WK48tlkNGVl" target="_blank" rel="noreferrer">

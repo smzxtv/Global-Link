@@ -25,7 +25,7 @@ struct SettingsView: View {
                     HStack {
                         Text("当前版本")
                         Spacer()
-                        Text("2.0.0")
+                        Text("2.1.0")
                             .foregroundColor(.secondary)
                     }
                     Button("检查更新") {
@@ -37,7 +37,7 @@ struct SettingsView: View {
                     HStack {
                         Text("应用")
                         Spacer()
-                        Text("Aethon Replica")
+                        Text("环球通 Global Link")
                             .foregroundColor(.secondary)
                     }
                     HStack {

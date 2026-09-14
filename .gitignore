@@ -29,5 +29,24 @@ src-tauri/resources/sing-box/*
 scripts/.cache/
 install.log
 
+# Rust build output
+src-tauri/target/
+
+# Android build artifacts & local SDK config (re-fetch via npm run fetch:android)
+android/.gradle/
+android/app/build/
+android/app/libs/
+android/app/src/main/jniLibs/
+android/local.properties
+android/sing-box-arm64.tar.gz
+android/run-build.bat
+android/setup-singbox.ps1
+android/screen*.png
+android/ui_*.xml
+android/emu*-*.log
+android/adb-*.log
+android/*-err.log
+android/*-out.log
+
 *.log
 cargo_check.log

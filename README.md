@@ -1,4 +1,4 @@
-# Aethon Replica
+# 环球通 Global Link
 
 ## 一款独立的 sing-box 网络客户端（Windows / Android / iOS）
 
@@ -54,17 +54,17 @@
 ## 📦 安装使用
 
 ### Windows（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Aethon-Replica-v2.0.0-Windows-x64-Installer.exe`
+1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Global-Link-v2.1.0-Windows-x64-Installer.exe`
 2. 双击安装（Windows 可能提示 SmartScreen，点「仍要运行」）
-3. 启动 Aethon Replica
+3. 启动 环球通 Global Link
 
 ### Android（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Aethon-Replica-v2.0.0-Android-Universal.apk`
+1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Global-Link-v2.1.0-Android-Universal.apk`
 2. 安装 APK（首次安装需允许未知来源）
 3. 启动应用，首次连接时授予 VPN 权限
 
 ### iOS（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Aethon-Replica-v2.0.0-iOS.ipa`
+1. 到 [Releases](https://github.com/smzxtv/aethon-replica/releases) 页面下载 `Global-Link-v2.1.0-iOS.ipa`
 2. 通过 AltStore 或企业签名方式安装
 3. 启动应用，首次连接时授予 VPN 权限
 

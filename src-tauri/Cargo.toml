@@ -1,8 +1,8 @@
 [package]
-name = "aethon-replica"
-version = "2.0.0"
-description = "Aethon Replica - independent Tauri v2 client for the sing-box networking core"
-authors = ["aethon-replica contributors"]
+name = "global_link"
+version = "2.1.0"
+description = "环球通 Global Link - independent Tauri v2 client for the sing-box networking core"
+authors = ["Global Link contributors"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -11,7 +11,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "aethon_replica_lib"
+name = "global_link_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

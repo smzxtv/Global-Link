@@ -66,7 +66,7 @@ const initialState: AppModel = {
   profiles: [DEFAULT_PROFILE],
   conn: { profileId: DEFAULT_PROFILE.id, mode: "vpn", protocol: "auto", scanMode: "disabled" },
   status: "disconnected",
-  logs: ["[应用] Aethon Replica 已就绪"],
+  logs: ["[应用] 环球通 Global Link 已就绪"],
   settings: {
     socksPort: 1819,
     logLevel: "info",

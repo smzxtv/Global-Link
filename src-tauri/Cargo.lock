@@ -9,23 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
-name = "aethon-replica"
-version = "1.0.0"
-dependencies = [
- "base64 0.22.1",
- "hex",
- "is_elevated",
- "serde",
- "serde_json",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "ureq",
- "windows-sys 0.61.2",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1377,6 +1360,23 @@ name = "glob"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e4eba85ea1d0a966a983acd07deee566e67395d2d96b6fb39e62b5a833f1eb0b"
+
+[[package]]
+name = "global_link"
+version = "2.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "hex",
+ "is_elevated",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "ureq",
+ "windows-sys 0.61.2",
+]
 
 [[package]]
 name = "gobject-sys"

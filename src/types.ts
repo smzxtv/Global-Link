@@ -1,4 +1,4 @@
-// Shared domain types for the Aethon Replica client.
+// Shared domain types for the Global Link (环球通) client.
 
 export type Page = "connect" | "configurations" | "settings";
 

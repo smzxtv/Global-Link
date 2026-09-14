@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Aethon Replica",
-  "version": "2.0.0",
-  "identifier": "io.github.aethonreplica.desktop",
+  "productName": "环球通 Global Link",
+  "version": "2.1.0",
+  "identifier": "com.shuma.globallink",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Aethon Replica",
+        "title": "环球通 Global Link",
         "width": 1120,
         "height": 720,
         "minWidth": 940,

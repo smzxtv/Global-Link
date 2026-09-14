@@ -8,11 +8,11 @@ android {
     compileSdk = 34
     
     defaultConfig {
-        applicationId = "io.github.aethonreplica"
+        applicationId = "com.shuma.globallink"
         minSdk = 26
         targetSdk = 34
         versionCode = 23
-        versionName = "2.0.0"
+        versionName = "2.1.0"
         
         vectorDrawables {
             useSupportLibrary = true
@@ -47,10 +47,15 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+        jniLibs {
+            // 确保 .so 被解压到 nativeLibraryDir，sing-box 才能作为可执行文件启动
+            useLegacyPackaging = true
+        }
     }
 }
 
 dependencies {
+    implementation(files("libs/libbox.aar"))
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -65,8 +70,6 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     
     // sing-box Android library
-    implementation("io.nekohasekai.sagernet:sing-box:1.14.0")
-    
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

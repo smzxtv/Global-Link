@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    aethon_replica_lib::run()
+    global_link_lib::run()
 }

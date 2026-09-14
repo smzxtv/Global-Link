@@ -13,10 +13,10 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="brand">
-        <div className="brand-mark">AR</div>
+        <div className="brand-mark">GL</div>
         <div>
-          <div className="brand-name">Aethon Replica</div>
-          <div className="brand-sub">sing-box frontend</div>
+          <div className="brand-name">环球通 Global Link</div>
+          <div className="brand-sub">Global Link · sing-box frontend</div>
         </div>
       </div>
 
@@ -33,9 +33,10 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-foot">
+        <div>环球通 v{state.appInfo ? state.appInfo.appVersion : "2.1.0"} · 出品：数码解码</div>
         <div>
           {state.appInfo
-            ? `v${state.appInfo.appVersion} · 核心 ${state.appInfo.core.singBoxVersion}`
+            ? `核心 ${state.appInfo.core.singBoxVersion}`
             : "正在连接后端…"}
         </div>
         <div className={`core-dot ${state.appInfo?.core.corePresent ? "ok" : ""}`}>

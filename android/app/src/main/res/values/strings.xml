@@ -1,0 +1,31 @@
+﻿<resources>
+    <string name="app_name">环球通 Global Link</string>
+    <string name="connect">连接</string>
+    <string name="disconnect">断开</string>
+    <string name="connecting">连接中...</string>
+    <string name="disconnected">已断开</string>
+    <string name="connected">已连接</string>
+    <string name="settings">设置</string>
+    <string name="configurations">配置</string>
+    <string name="add_config">添加配置</string>
+    <string name="import_subscription">导入订阅</string>
+    <string name="edit">编辑</string>
+    <string name="delete">删除</string>
+    <string name="save">保存</string>
+    <string name="cancel">取消</string>
+    <string name="ok">确定</string>
+    <string name="error">错误</string>
+    <string name="success">成功</string>
+    <string name="vpn_permission_required">需要VPN权限才能使用此功能</string>
+    <string name="vpn_service_running">VPN服务正在运行</string>
+    <string name="vpn_service_stopped">VPN服务已停止</string>
+    <string name="share_link">分享链接</string>
+    <string name="proxy_address">代理地址</string>
+    <string name="proxy_port">代理端口</string>
+    <string name="username">用户名</string>
+    <string name="password">密码</string>
+    <string name="protocol">协议</string>
+    <string name="subscription_url">订阅地址</string>
+    <string name="refresh">刷新</string>
+    <string name="loading">加载中...</string>
+</resources>

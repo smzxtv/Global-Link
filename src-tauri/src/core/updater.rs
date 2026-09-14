@@ -20,7 +20,7 @@ pub fn update_repo() -> &'static str {
     option_env!("AETHON_REPLICA_UPDATE_REPO").unwrap_or("")
 }
 
-const USER_AGENT: &str = "aethon-replica-updater/2.0";
+const USER_AGENT: &str = "global-link-updater/2.0";
 
 #[derive(Debug, Deserialize)]
 struct GhRelease {
