@@ -11,10 +11,10 @@
 //! 4. **Diagnostics** — snapshot the current adapter and route table for the UI.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde::Serialize;
-use tauri::{AppHandle, Emitter, Manager};
+use tauri::{AppHandle, Emitter};
 
 use crate::core::elevate::is_elevated;
 use crate::core::singbox;
@@ -42,30 +42,21 @@ pub struct PreflightReport {
     pub messages: Vec<String>,
 }
 
-/// Locate the bundled `wintun.dll` (next to the core, or alongside the exe).
+/// Locate the bundled `wintun.dll` across all known bundle layouts
+/// (see `singbox::resource_candidates`).
 fn wintun_dll_path(app: &AppHandle) -> Option<PathBuf> {
-    if let Ok(res) = app.path().resolve(singbox::CORE_SUBDIR, tauri::path::BaseDirectory::Resource) {
-        let candidate = res.join("wintun.dll");
-        if candidate.is_file() {
-            return Some(candidate);
-        }
-    }
-    if let Ok(exe) = std::env::current_exe() {
-        if let Some(dir) = exe.parent() {
-            let candidate = dir.join("wintun.dll");
-            if candidate.is_file() {
-                return Some(candidate);
-            }
-        }
-    }
-    let candidate = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("resources")
-        .join(singbox::CORE_SUBDIR)
-        .join("wintun.dll");
-    if candidate.is_file() {
-        return Some(candidate);
-    }
-    None
+    let exe_dir = std::env::current_exe()
+        .ok()
+        .and_then(|e| e.parent().map(|p| p.to_path_buf()));
+    singbox::resource_candidates(
+        singbox::resource_root(app),
+        exe_dir,
+        Path::new(env!("CARGO_MANIFEST_DIR")),
+        singbox::CORE_SUBDIR,
+        "wintun.dll",
+    )
+    .into_iter()
+    .find(|p| p.is_file())
 }
 
 /// Run a PowerShell command and return stdout, or an error string.

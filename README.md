@@ -54,12 +54,13 @@
 ## 📦 安装使用
 
 ### Windows（普通用户）
-1. 到 [Releases](https://github.com/smzxtv/Global-Link/releases) 页面下载 `Global-Link-v2.1.2-Windows-x64-Installer.exe`
-   （v2.1.2 = v2.1.1 的节点修复 + 修好应用内「检查更新」：此前版本更新源为空，
-   点检查更新只会显示「检查失败」；Android / iOS 包目前仍是 v2.1.0）
+1. 到 [Releases](https://github.com/smzxtv/Global-Link/releases) 页面下载 `Global-Link-v2.1.3-Windows-x64-Installer.exe`
+   （v2.1.3 修复了 v2.1.0–v2.1.2 的致命打包缺陷：安装包内 sing-box 内核被
+   打包器拍平到上一层目录而程序只会在子目录里找，导致客户机上「核心缺失、
+   无法连接」；本版已兼容两种布局并改进报错提示）
 2. 双击安装（Windows 可能提示 SmartScreen，点「仍要运行」）
 3. 启动 环球通 Global Link
-4. 如果你正在使用 v2.1.0 / v2.1.1：这两版没有可用的更新源，请手动安装本版一次；
+4. 如果你正在使用 v2.1.0 / v2.1.1 / v2.1.2：请手动安装本版一次；
    从 v2.1.2 起，设置页的「检查更新 / 下载更新」即可正常使用
 
 ### Android（普通用户）

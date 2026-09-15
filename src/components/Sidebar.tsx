@@ -40,7 +40,7 @@ export default function Sidebar() {
             : "正在连接后端…"}
         </div>
         <div className={`core-dot ${state.appInfo?.core.corePresent ? "ok" : ""}`}>
-          {state.appInfo?.core.corePresent ? "核心就绪" : "核心缺失 — 运行 fetch:core"}
+          {state.appInfo?.core.corePresent ? "核心就绪" : "核心缺失 — 请重新安装最新版"}
         </div>
         <div className="sidebar-links">
           <a href="https://t.me/+tVg48WK48tlkNGVl" target="_blank" rel="noreferrer">

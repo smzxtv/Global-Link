@@ -180,7 +180,12 @@ pub fn connect(app: AppHandle, req: ConnectRequest) -> Result<(), String> {
         .unwrap()
         .clone()
         .or_else(|| singbox::resolve_core_path(&app))
-        .ok_or_else(|| "sing-box core not found — run `npm run fetch:core`".to_string())?;
+        .ok_or_else(|| {
+            format!(
+                "核心程序缺失（sing-box.exe），请重新安装最新版 Global Link。已检查目录：{}",
+                singbox::describe_search(&app)
+            )
+        })?;
 
     let params = ConnectParams {
         mode: req.mode,
