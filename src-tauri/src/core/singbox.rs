@@ -27,10 +27,16 @@ pub fn resource_root(app: &AppHandle) -> PathBuf {
 ///
 /// 1. `<resources>/<subdir>/<file>` — canonical layout (`resources/sing-box/…`)
 /// 2. `<resources>/<file>`          — flattened layout some NSIS/MSI bundlers
-///    produce when the `resources` map copies file-by-file (this is what bit
-///    end users: the core WAS shipped, just one directory level up)
-/// 3. `<exe_dir>/<subdir>/<file>` and `<exe_dir>/<file>` — portable builds
-/// 4. `<manifest>/resources/…` — both layouts when developing from `src-tauri`
+///    produce when the `resources` map copies file-by-file
+/// 3. `<resources>/resources/<subdir>/<file>` and `<resources>/resources/<file>`
+///    — what the NSIS/MSI installers actually do on Windows: `bundle.resources`
+///    entries keep their `resources/…` prefix relative to the install dir, so
+///    the core lands in `<install>\resources\sing-box\sing-box.exe` while
+///    Tauri's `resource_dir()` points at `<install>`. This is what bit end
+///    users on 2.1.0–2.1.3.
+/// 4. `<exe_dir>/…` — same four layouts relative to the executable directory
+///    (portable builds).
+/// 5. `<manifest>/resources/…` — both layouts when developing from `src-tauri`.
 pub fn resource_candidates(
     resource_root: PathBuf,
     exe_dir: Option<PathBuf>,
@@ -48,10 +54,14 @@ pub fn resource_candidates(
     if !resource_root.as_os_str().is_empty() {
         push(resource_root.join(subdir).join(file_name));
         push(resource_root.join(file_name));
+        push(resource_root.join("resources").join(subdir).join(file_name));
+        push(resource_root.join("resources").join(file_name));
     }
     if let Some(dir) = exe_dir {
         push(dir.join(subdir).join(file_name));
         push(dir.join(file_name));
+        push(dir.join("resources").join(subdir).join(file_name));
+        push(dir.join("resources").join(file_name));
     }
     push(manifest_dir.join("resources").join(subdir).join(file_name));
     push(manifest_dir.join("resources").join(file_name));
@@ -76,6 +86,8 @@ pub fn resolve_core_path(app: &AppHandle) -> Option<PathBuf> {
 
 /// Human-readable list of the directories searched for bundled resources,
 /// included in error messages so end users can attach it to bug reports.
+/// Only directories that actually exist are listed, so compile-time dev-tree
+/// candidates never leak into end-user diagnostics.
 pub fn describe_search(app: &AppHandle) -> String {
     let exe_dir = std::env::current_exe()
         .ok()
@@ -89,6 +101,9 @@ pub fn describe_search(app: &AppHandle) -> String {
         exe_name(),
     ) {
         if let Some(d) = c.parent() {
+            if !d.is_dir() {
+                continue;
+            }
             let s = d.display().to_string();
             if !dirs.contains(&s) {
                 dirs.push(s);
@@ -125,9 +140,15 @@ mod tests {
         assert!(c.contains(&PathBuf::from("C:\\app\\sing-box\\sing-box.exe")));
         // flattened layout (the one that shipped broken to end users)
         assert!(c.contains(&PathBuf::from("C:\\app\\sing-box.exe")));
-        // next to the executable, both layouts
+        // NSIS/MSI install layout: `bundle.resources` keeps its `resources/…`
+        // prefix under the install dir (this is what 2.1.0–2.1.3 missed)
+        assert!(c.contains(&PathBuf::from("C:\\app\\resources\\sing-box\\sing-box.exe")));
+        assert!(c.contains(&PathBuf::from("C:\\app\\resources\\sing-box.exe")));
+        // next to the executable, both layouts and both prefixes
         assert!(c.contains(&PathBuf::from("C:\\app\\bin\\sing-box\\sing-box.exe")));
         assert!(c.contains(&PathBuf::from("C:\\app\\bin\\sing-box.exe")));
+        assert!(c.contains(&PathBuf::from("C:\\app\\bin\\resources\\sing-box\\sing-box.exe")));
+        assert!(c.contains(&PathBuf::from("C:\\app\\bin\\resources\\sing-box.exe")));
         // dev tree, both layouts
         assert!(c.contains(&PathBuf::from(
             "D:\\src\\src-tauri\\resources\\sing-box\\sing-box.exe"
