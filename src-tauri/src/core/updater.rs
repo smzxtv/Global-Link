@@ -1,9 +1,9 @@
 //! GitHub Releases-based update checking, verification and download.
 //!
-//! The update source is `owner/repo`, configured at build time through the
-//! `AETHON_REPLICA_UPDATE_REPO` environment variable (e.g. `me/aethon-replica`).
-//! When unset, update checks report a clear "not configured" error instead of
-//! silently doing nothing.
+//! The update source is `owner/repo`, defaulting to this project's public
+//! repository (`smzxtv/Global-Link`) so shipped builds can check for updates
+//! out of the box. It can be overridden at build time through the
+//! `AETHON_REPLICA_UPDATE_REPO` environment variable (e.g. `me/my-fork`).
 
 use std::fs::File;
 use std::io::{self, Read, Write};
@@ -13,11 +13,16 @@ use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use tauri::{Manager, Emitter};
 
-/// The update source `owner/repo`. Configured at build time through the
-/// `AETHON_REPLICA_UPDATE_REPO` environment variable (e.g. `me/aethon-replica`).
-/// When unset, update checks report a clear "not configured" error.
+/// Default update source (`owner/repo`), used when the build-time override is
+/// absent. A hard-coded default is what makes the shipped installer able to
+/// check for updates without any special build flags.
+pub const DEFAULT_UPDATE_REPO: &str = "smzxtv/Global-Link";
+
+/// The update source `owner/repo`. Overridable at build time through the
+/// `AETHON_REPLICA_UPDATE_REPO` environment variable (e.g. `me/my-fork`).
+/// When neither is usable, update checks report a clear "not configured" error.
 pub fn update_repo() -> &'static str {
-    option_env!("AETHON_REPLICA_UPDATE_REPO").unwrap_or("")
+    option_env!("AETHON_REPLICA_UPDATE_REPO").unwrap_or(DEFAULT_UPDATE_REPO)
 }
 
 const USER_AGENT: &str = "global-link-updater/2.0";
@@ -233,4 +238,49 @@ fn launch_installer(path: &Path) -> bool {
 #[cfg(not(windows))]
 fn launch_installer(_path: &Path) -> bool {
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn update_repo_is_a_valid_owner_repo_pair() {
+        let repo = update_repo();
+        let (owner, name) = repo
+            .split_once('/')
+            .unwrap_or_else(|| panic!("update repo must be owner/repo, got {repo:?}"));
+        assert!(!owner.is_empty(), "owner must not be empty: {repo:?}");
+        assert!(!name.is_empty(), "repo name must not be empty: {repo:?}");
+        assert!(!name.contains('/'), "repo must not have extra slashes: {repo:?}");
+    }
+
+    /// Regression guard: 2.1.1 shipped with an empty default, so every update
+    /// check failed with "update source not configured".
+    #[test]
+    fn update_repo_is_configured_by_default() {
+        repo_configured().expect("update source must be configured without build flags");
+        if option_env!("AETHON_REPLICA_UPDATE_REPO").is_none() {
+            assert_eq!(update_repo(), DEFAULT_UPDATE_REPO);
+            assert_eq!(update_repo(), "smzxtv/Global-Link");
+        }
+    }
+
+    #[test]
+    fn update_url_points_at_the_releases_api() {
+        let url = format!("https://api.github.com/repos/{}/releases/latest", update_repo());
+        assert_eq!(
+            url,
+            "https://api.github.com/repos/smzxtv/Global-Link/releases/latest"
+        );
+    }
+
+    #[test]
+    fn version_gt_compares_numeric_segments() {
+        assert!(version_gt("2.1.2", "2.1.1"));
+        assert!(version_gt("v2.2.0", "2.1.9"));
+        assert!(version_gt("2.1.1", "2.1"));
+        assert!(!version_gt("2.1.1", "2.1.1"));
+        assert!(!version_gt("2.1.0", "2.1.1"));
+    }
 }
