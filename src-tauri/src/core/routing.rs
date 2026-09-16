@@ -5,7 +5,8 @@
 //! by a previous session. This module handles the lifecycle around that:
 //!
 //! 1. **Pre-flight** — confirm elevation and that `wintun.dll` is reachable.
-//! 2. **Recovery** — detect and report orphaned wintun/sing-box adapters.
+//! 2. **Recovery** — remove orphaned wintun/sing-box adapters and phantom
+//!    devices left behind by crashed sessions.
 //! 3. **Cleanup** — flush the DNS cache and verify the default route is restored
 //!    once sing-box exits.
 //! 4. **Diagnostics** — snapshot the current adapter and route table for the UI.
@@ -202,9 +203,50 @@ pub fn cleanup(app: &AppHandle) -> Result<HashMap<String, String>, String> {
     Ok(report)
 }
 
+/// Delete phantom wintun devices left behind by hard-killed/crashed sing-box
+/// processes. sing-box normally destroys its wintun adapter on graceful exit,
+/// but a crash or a hard kill (`child.kill()`) leaves a device in "Unknown"
+/// state that makes the NEXT `create adapter` fail with "Cannot create a file
+/// when that file already exists" — i.e. VPN mode stays broken until the phantom
+/// is removed. `pnputil /remove-device` clears them immediately, no reboot.
+/// Only "Unknown"-state devices are touched; a live adapter reports "OK".
+/// Returns the friendly names of the devices that were removed.
+fn remove_phantom_wintun_devices() -> Vec<String> {
+    let script = r#"
+$removed = @()
+Get-PnpDevice -ErrorAction SilentlyContinue |
+  Where-Object { $_.FriendlyName -match 'sing-tun|wintun' -and $_.Status -eq 'Unknown' } |
+  ForEach-Object {
+    $null = pnputil /remove-device "$($_.InstanceId)" 2>$null
+    $removed += $_.FriendlyName
+  }
+$removed -join ', '
+"#;
+    match run_powershell(script) {
+        Ok(out) => out
+            .lines()
+            .flat_map(|l| l.split(','))
+            .map(|l| l.trim().to_string())
+            .filter(|l| !l.is_empty())
+            .collect(),
+        Err(_) => Vec::new(),
+    }
+}
+
 /// Remove orphaned TUN adapters left by a crashed session.
 /// Returns the list of adapters that were found (removal may require a reboot).
 pub fn recover_stale_adapters(app: &AppHandle) -> Result<Vec<String>, String> {
+    let phantoms = remove_phantom_wintun_devices();
+    if !phantoms.is_empty() {
+        let _ = app.emit(
+            "core-log",
+            format!(
+                "[routing] removed {} phantom wintun device(s) left by crashed sessions: {}",
+                phantoms.len(),
+                phantoms.join(", ")
+            ),
+        );
+    }
     let stale = find_tun_adapters();
     if stale.is_empty() {
         let _ = app.emit("core-log", "[routing] no orphaned TUN adapters detected".to_string());
